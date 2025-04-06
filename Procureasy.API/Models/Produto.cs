@@ -3,27 +3,25 @@ using System.Collections.Generic;
 
 namespace Procureasy.API.Models;
 
-public partial class Usuario
+public partial class Produto
 {
     public int Id { get; set; }
 
     public string Nome { get; set; } = null!;
 
-    public string Email { get; set; } = null!;
+    public int Quantidade { get; set; }
 
-    public string Senha { get; set; } = null!;
+    public decimal Valor { get; set; }
 
-    public string? Cnpj { get; set; }
+    public string Descricao { get; set; } = null!;
 
-    public string? Cpf { get; set; }
-
-    public string TipoUsuario { get; set; } = null!;
+    public string Area { get; set; } = null!;
 
     public bool Ativo { get; set; }
 
     public DateTime DataCriacao { get; set; }
 
-    public virtual ICollection<Lance> Lances { get; set; } = new List<Lance>();
+    public DateTime DataAtualizacao { get; set; }
 
     public virtual ICollection<Leilao> Leiloes { get; set; } = new List<Leilao>();
 }
