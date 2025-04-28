@@ -35,42 +35,32 @@ namespace Procureasy.API.Controllers
             var usuario = await _context.Usuarios.FindAsync(id);
 
             if (usuario == null)
-            {
                 return NotFound();
-            }
 
             return usuario;
         }
 
         // PUT: api/Usuario/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUsuario(int id, Usuario usuario)
+        public async Task<IActionResult> PutUsuario(int id, Usuario usuarioAtualizado)
         {
-            if (id != usuario.Id)
-            {
-                return BadRequest();
-            }
+            if (id != usuarioAtualizado.Id)
+                return BadRequest(new { message = "ID da URL difere do ID do usuário." });
 
-            // Check if email already exists on another user
             var existingUser = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Email == usuario.Email && u.Id != id);
-            
+                .FirstOrDefaultAsync(u => u.Email == usuarioAtualizado.Email && u.Id != id);
+
             if (existingUser != null)
-            {
                 return Conflict(new { message = "Este email já está em uso." });
-            }
 
-            // Validar CPF e CNPJ de acordo com o tipo de usuário
-            if (usuario.TipoUsuario == TipoUsuario.Consumidor && string.IsNullOrEmpty(usuario.Cpf))
-            {
+            // Validação de CPF ou CNPJ conforme o TipoUsuario
+            if (usuarioAtualizado.TipoUsuario == TipoUsuario.Consumidor && string.IsNullOrEmpty(usuarioAtualizado.Cpf))
                 return BadRequest(new { message = "CPF é obrigatório para usuários do tipo Consumidor." });
-            }
-            else if (usuario.TipoUsuario == TipoUsuario.Fornecedor && string.IsNullOrEmpty(usuario.Cnpj))
-            {
-                return BadRequest(new { message = "CNPJ é obrigatório para usuários do tipo Fornecedor." });
-            }
 
-            _context.Entry(usuario).State = EntityState.Modified;
+            if (usuarioAtualizado.TipoUsuario == TipoUsuario.Fornecedor && string.IsNullOrEmpty(usuarioAtualizado.Cnpj))
+                return BadRequest(new { message = "CNPJ é obrigatório para usuários do tipo Fornecedor." });
+
+            _context.Entry(usuarioAtualizado).State = EntityState.Modified;
 
             try
             {
@@ -79,13 +69,9 @@ namespace Procureasy.API.Controllers
             catch (DbUpdateConcurrencyException)
             {
                 if (!UsuarioExists(id))
-                {
                     return NotFound();
-                }
                 else
-                {
                     throw;
-                }
             }
 
             return NoContent();
@@ -95,33 +81,24 @@ namespace Procureasy.API.Controllers
         [HttpPost]
         public async Task<ActionResult<Usuario>> PostUsuario(Usuario usuario)
         {
-            // Verifica se o email já existe
             var existingUser = await _context.Usuarios
                 .FirstOrDefaultAsync(u => u.Email == usuario.Email);
-            
-            if (existingUser != null)
-            {
-                return Conflict(new { message = "Este email já está em uso." });
-            }
-            
-            // Validar CPF e CNPJ de acordo com o tipo de usuário
-            if (usuario.TipoUsuario == TipoUsuario.Consumidor && string.IsNullOrEmpty(usuario.Cpf))
-            {
-                return BadRequest(new { message = "CPF é obrigatório para usuários do tipo Consumidor." });
-            }
-            else if (usuario.TipoUsuario == TipoUsuario.Fornecedor && string.IsNullOrEmpty(usuario.Cnpj))
-            {
-                return BadRequest(new { message = "CNPJ é obrigatório para usuários do tipo Fornecedor." });
-            }
 
-            // Define a data de criação
-            usuario.DataCriacao = DateTime.Now;
-            
-            // Define como ativo por padrão
+            if (existingUser != null)
+                return Conflict(new { message = "Este email já está em uso." });
+
+            // Validação de CPF ou CNPJ conforme o TipoUsuario
+            if (usuario.TipoUsuario == TipoUsuario.Consumidor && string.IsNullOrEmpty(usuario.Cpf))
+                return BadRequest(new { message = "CPF é obrigatório para usuários do tipo Consumidor." });
+
+            if (usuario.TipoUsuario == TipoUsuario.Fornecedor && string.IsNullOrEmpty(usuario.Cnpj))
+                return BadRequest(new { message = "CNPJ é obrigatório para usuários do tipo Fornecedor." });
+
+            usuario.DataCriacao = DateTime.UtcNow;
             usuario.Ativo = true;
 
             _context.Usuarios.Add(usuario);
-            
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -131,7 +108,7 @@ namespace Procureasy.API.Controllers
                 return BadRequest(new { message = "Erro ao salvar o usuário: " + ex.InnerException?.Message });
             }
 
-            return CreatedAtAction("GetUsuario", new { id = usuario.Id }, usuario);
+            return CreatedAtAction(nameof(GetUsuario), new { id = usuario.Id }, usuario);
         }
 
         // DELETE: api/Usuario/5
@@ -140,17 +117,13 @@ namespace Procureasy.API.Controllers
         {
             var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario == null)
-            {
                 return NotFound();
-            }
 
-            // Check if the user has associated auctions or bids
             var hasLeiloes = await _context.Leiloes.AnyAsync(l => l.UsuarioId == id);
             var hasLances = await _context.Lances.AnyAsync(l => l.UsuarioId == id);
 
             if (hasLeiloes || hasLances)
             {
-                // Instead of deleting, just mark as inactive
                 usuario.Ativo = false;
                 _context.Entry(usuario).State = EntityState.Modified;
             }
@@ -160,7 +133,6 @@ namespace Procureasy.API.Controllers
             }
 
             await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
@@ -170,13 +142,12 @@ namespace Procureasy.API.Controllers
         {
             var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario == null)
-            {
                 return NotFound();
-            }
 
             usuario.Ativo = true;
-            await _context.SaveChangesAsync();
+            _context.Entry(usuario).State = EntityState.Modified;
 
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
@@ -186,13 +157,12 @@ namespace Procureasy.API.Controllers
         {
             var usuario = await _context.Usuarios.FindAsync(id);
             if (usuario == null)
-            {
                 return NotFound();
-            }
 
             usuario.Ativo = false;
-            await _context.SaveChangesAsync();
+            _context.Entry(usuario).State = EntityState.Modified;
 
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 
