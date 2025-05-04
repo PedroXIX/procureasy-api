@@ -5,13 +5,10 @@ namespace Procureasy.API.Models.Enums
 {
     public enum TipoUsuario
     {
-        [Display(Name = "CONSUMIDOR")]
-        Consumidor,
+        CONSUMIDOR,
         
-        [Display(Name = "FORNECEDOR")]
-        Fornecedor,
+        FORNECEDOR,
         
-        [Display(Name = "ADMINISTRADOR")]
-        Administrador
+        ADMINISTRADOR,
     }
 }

@@ -5,13 +5,10 @@ namespace Procureasy.API.Models.Enums
 {
     public enum StatusLeilao
     {
-        [Display(Name = "ABERTO")]
-        Aberto,
+        ABERTO,
         
-        [Display(Name = "ENCERRADO")]
-        Encerrado,
+        ENCERRADO,
         
-        [Display(Name = "CANCELADO")]
-        Cancelado
+        CANCELADO
     }
 }

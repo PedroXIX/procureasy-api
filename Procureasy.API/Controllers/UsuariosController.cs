@@ -54,10 +54,10 @@ namespace Procureasy.API.Controllers
                 return Conflict(new { message = "Este email já está em uso." });
 
             // Validação de CPF ou CNPJ conforme o TipoUsuario
-            if (usuarioAtualizado.TipoUsuario == TipoUsuario.Consumidor && string.IsNullOrEmpty(usuarioAtualizado.Cpf))
+            if (usuarioAtualizado.TipoUsuario == TipoUsuario.CONSUMIDOR && string.IsNullOrEmpty(usuarioAtualizado.Cpf))
                 return BadRequest(new { message = "CPF é obrigatório para usuários do tipo Consumidor." });
 
-            if (usuarioAtualizado.TipoUsuario == TipoUsuario.Fornecedor && string.IsNullOrEmpty(usuarioAtualizado.Cnpj))
+            if (usuarioAtualizado.TipoUsuario == TipoUsuario.FORNECEDOR && string.IsNullOrEmpty(usuarioAtualizado.Cnpj))
                 return BadRequest(new { message = "CNPJ é obrigatório para usuários do tipo Fornecedor." });
 
             _context.Entry(usuarioAtualizado).State = EntityState.Modified;
@@ -79,7 +79,7 @@ namespace Procureasy.API.Controllers
 
         // POST: api/Usuario
         [HttpPost]
-        public async Task<ActionResult<Usuario>> PostUsuario(Usuario usuario)
+        public async Task<ActionResult<Usuario>> PostUsuario([FromBody]Usuario usuario)
         {
             var existingUser = await _context.Usuarios
                 .FirstOrDefaultAsync(u => u.Email == usuario.Email);
@@ -88,10 +88,10 @@ namespace Procureasy.API.Controllers
                 return Conflict(new { message = "Este email já está em uso." });
 
             // Validação de CPF ou CNPJ conforme o TipoUsuario
-            if (usuario.TipoUsuario == TipoUsuario.Consumidor && string.IsNullOrEmpty(usuario.Cpf))
+            if (usuario.TipoUsuario == TipoUsuario.CONSUMIDOR && string.IsNullOrEmpty(usuario.Cpf))
                 return BadRequest(new { message = "CPF é obrigatório para usuários do tipo Consumidor." });
 
-            if (usuario.TipoUsuario == TipoUsuario.Fornecedor && string.IsNullOrEmpty(usuario.Cnpj))
+            if (usuario.TipoUsuario == TipoUsuario.FORNECEDOR && string.IsNullOrEmpty(usuario.Cnpj))
                 return BadRequest(new { message = "CNPJ é obrigatório para usuários do tipo Fornecedor." });
 
             usuario.DataCriacao = DateTime.UtcNow;

@@ -47,52 +47,51 @@ namespace Procureasy.API.Data
             });
 
             modelBuilder.Entity<Leilao>(entity =>
-{
-    entity.HasKey(e => e.Id).HasName("PK__Leilaoes__3214EC0745BE6307");
+            {
+                entity.HasKey(e => e.Id).HasName("PK__Leilaoes__3214EC0745BE6307");
 
-    entity.HasIndex(e => e.DataTermino, "IX_Leilao_DataTermino");
-    entity.HasIndex(e => e.Status, "IX_Leilao_Status");
+                entity.HasIndex(e => e.DataTermino, "IX_Leilao_DataTermino");
+                entity.HasIndex(e => e.Status, "IX_Leilao_Status");
 
-    entity.Property(e => e.DataAtualizacao)
-        .HasDefaultValueSql("(getdate())")
-        .HasColumnType("datetime");
-    entity.Property(e => e.DataCriacao)
-        .HasDefaultValueSql("(getdate())")
-        .HasColumnType("datetime");
-    entity.Property(e => e.DataEntrega).HasColumnType("datetime");
-    entity.Property(e => e.DataInicio).HasColumnType("datetime");
-    entity.Property(e => e.DataTermino).HasColumnType("datetime");
-    entity.Property(e => e.Descricao)
-        .HasMaxLength(500)
-        .IsUnicode(false);
-    entity.Property(e => e.PrecoFinal).HasColumnType("decimal(10, 2)");
-    entity.Property(e => e.PrecoInicial).HasColumnType("decimal(10, 2)");
+                entity.Property(e => e.DataAtualizacao)
+                    .HasDefaultValueSql("(getdate())")
+                    .HasColumnType("datetime");
+                entity.Property(e => e.DataCriacao)
+                    .HasDefaultValueSql("(getdate())")
+                    .HasColumnType("datetime");
+                entity.Property(e => e.DataEntrega).HasColumnType("datetime");
+                entity.Property(e => e.DataInicio).HasColumnType("datetime");
+                entity.Property(e => e.DataTermino).HasColumnType("datetime");
+                entity.Property(e => e.Descricao)
+                    .HasMaxLength(500)
+                    .IsUnicode(false);
+                entity.Property(e => e.PrecoFinal).HasColumnType("decimal(10, 2)");
+                entity.Property(e => e.PrecoInicial).HasColumnType("decimal(10, 2)");
 
-    entity.Property(e => e.Status)
-        .HasConversion(
-            v => v.ToString(),
-            v => (StatusLeilao)Enum.Parse(typeof(StatusLeilao), v))
-        .HasMaxLength(20)
-        .IsUnicode(false)
-        .HasDefaultValue(StatusLeilao.Aberto);
+                entity.Property(e => e.Status)
+                    .HasConversion(
+                        v => v.ToString(),
+                        v => (StatusLeilao)Enum.Parse(typeof(StatusLeilao), v))
+                    .HasMaxLength(20)
+                    .IsUnicode(false)
+                    .HasDefaultValue(StatusLeilao.ABERTO);
 
-    entity.Property(e => e.Titulo)
-        .HasMaxLength(100)
-        .IsUnicode(false);
+                entity.Property(e => e.Titulo)
+                    .HasMaxLength(100)
+                    .IsUnicode(false);
 
-    entity.HasOne(d => d.Produto)
-        .WithMany(p => p.Leiloes)
-        .HasForeignKey(d => d.ProdutoId)
-        .OnDelete(DeleteBehavior.ClientSetNull)
-        .HasConstraintName("FK_Leilao_Produto");
+                entity.HasOne(d => d.Produto)
+                    .WithMany(p => p.Leiloes)
+                    .HasForeignKey(d => d.ProdutoId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Leilao_Produto");
 
-    entity.HasOne(d => d.Usuario)
-        .WithMany(p => p.Leiloes)
-        .HasForeignKey(d => d.UsuarioId)
-        .OnDelete(DeleteBehavior.ClientSetNull)
-        .HasConstraintName("FK_Leilao_Usuario");
-});
-
+                entity.HasOne(d => d.Usuario)
+                    .WithMany(p => p.Leiloes)
+                    .HasForeignKey(d => d.UsuarioId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Leilao_Usuario");
+            });
 
             modelBuilder.Entity<Produto>(entity =>
             {
