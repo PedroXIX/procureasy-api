@@ -1,5 +1,7 @@
 using Procureasy.API.Data;
 using Microsoft.EntityFrameworkCore;
+using Procureasy.API.Services.Interfaces;
+using Procureasy.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,7 @@ builder.Services.AddDbContext<ProcurEasyContext>(options =>
    //options.UseSqlServer(builder.Configuration.GetConnectionString("NotebookConnection")));
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 var app = builder.Build();
 
