@@ -8,8 +8,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ProcurEasyContext>(options =>
-   // options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); //método para conectar ao database definido no appsettings
-    options.UseSqlServer(builder.Configuration.GetConnectionString("NotebookConnection")));
+   options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); //método para conectar ao database definido no appsettings
+   //options.UseSqlServer(builder.Configuration.GetConnectionString("NotebookConnection")));
 
 builder.Services.AddControllers();
 
