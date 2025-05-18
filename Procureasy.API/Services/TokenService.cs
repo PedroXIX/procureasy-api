@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
 using Procureasy.API.Data;
 using Procureasy.API.Dtos;
+using Procureasy.API.Helpers;
 using Procureasy.API.Models;
 using Procureasy.API.Services.Interfaces;
 
@@ -27,7 +28,7 @@ namespace Procureasy.API.Services
         public string GenerateToken(LoginDto loginDto)
         {
             var usuarioDataBase = _context.Usuarios.FirstOrDefault(u => u.Email == loginDto.Email);
-            if (usuarioDataBase == null || loginDto.Email!= usuarioDataBase.Email|| loginDto.Senha != usuarioDataBase.Senha)
+            if (usuarioDataBase == null || loginDto.Email!= usuarioDataBase.Email|| !PasswordHelper.VerifyPassword(loginDto.Senha, usuarioDataBase.Senha))
             {
                 return String.Empty;
             }
@@ -41,12 +42,12 @@ namespace Procureasy.API.Services
             var tokenOptions = new JwtSecurityToken(
                 issuer: issuer,
                 audience: audience,
-                claims: new []
-                {
+                claims:
+                [
                     new Claim(type: ClaimTypes.Name, usuarioDataBase.Nome),
                     new Claim(type: ClaimTypes.Email, usuarioDataBase.Email),
                     new Claim(type: ClaimTypes.Role, usuarioDataBase.TipoUsuario.ToString()),
-                },
+                ],
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: signingCredentials
             );
