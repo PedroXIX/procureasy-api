@@ -7,11 +7,15 @@ using Microsoft.EntityFrameworkCore;
 using Procureasy.API.Data;
 using Procureasy.API.Models.Enums;
 using Procureasy.API.Models;
+using Microsoft.AspNetCore.Authorization;
+using Procureasy.API.Helpers;
 
 namespace Procureasy.API.Controllers
 {
+    [Authorize(Roles = "ADMINISTRADOR")]
     [Route("api/[controller]")]
     [ApiController]
+   
     public class UsuarioController : ControllerBase
     {
         private readonly ProcurEasyContext _context;
@@ -94,6 +98,7 @@ namespace Procureasy.API.Controllers
             if (usuario.TipoUsuario == TipoUsuario.FORNECEDOR && string.IsNullOrEmpty(usuario.Cnpj))
                 return BadRequest(new { message = "CNPJ é obrigatório para usuários do tipo Fornecedor." });
 
+            usuario.Senha = PasswordHelper.HashPassword(usuario.Senha);
             usuario.DataCriacao = DateTime.UtcNow;
             usuario.Ativo = true;
 
