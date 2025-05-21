@@ -13,6 +13,17 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddEndpointsApiExplorer();
 
+// Adiciona política CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo()
@@ -63,14 +74,14 @@ builder.Services.AddAuthentication(x =>
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = builder.Configuration["Jwt:Issuer"],
                 ValidAudience = builder.Configuration["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
             };
         })
     ;
 
 builder.Services.AddDbContext<ProcurEasyContext>(options =>
-   options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); //método para conectar ao database definido no appsettings
-                                                                                          //options.UseSqlServer(builder.Configuration.GetConnectionString("NotebookConnection")));
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); //método para conectar ao database definido no appsettings
+   options.UseSqlServer(builder.Configuration.GetConnectionString("NotebookConnection")));
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITokenService, TokenService>();
@@ -85,6 +96,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 
