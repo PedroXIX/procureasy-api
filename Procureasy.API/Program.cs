@@ -85,8 +85,7 @@ builder.Services.AddDbContext<ProcurEasyContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<UsuarioService>();
-
+builder.Services.AddScoped<IUsuarioService, UsuarioService>(); 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline

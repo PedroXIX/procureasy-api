@@ -1,19 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Procureasy.API.Dtos.Usuario;
-using Procureasy.API.Models;
-using Procureasy.API.Services;
+using Procureasy.API.Services.Interfaces;
 
 namespace Procureasy.API.Controllers;
 
-[Authorize(Roles = "ADMINISTRADOR")]
+//[Authorize(Roles = "ADMINISTRADOR")]
 [Route("api/[controller]")]
 [ApiController]
 public class UsuarioController : ControllerBase
 {
-    private readonly UsuarioService _service;
+    private readonly IUsuarioService _service;
 
-    public UsuarioController(UsuarioService service)
+    public UsuarioController(IUsuarioService service)
     {
         _service = service;
     }
@@ -40,11 +39,10 @@ public class UsuarioController : ControllerBase
         return CreatedAtAction(nameof(GetUsuario), new { id = created!.Id }, created);
     }
 
-
-    [HttpPatch("{id}")]
-    public async Task<IActionResult> PatchUsuario(int id, [FromBody] UsuarioPatchDto dto)
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutUsuario(int id, [FromBody] UsuarioUpdateDto dto)
     {
-        var (success, message) = await _service.PatchAsync(id, dto);
+        var (success, message) = await _service.UpdateAsync(id, dto);
         if (!success)
             return BadRequest(new { message });
 

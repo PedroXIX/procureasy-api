@@ -7,13 +7,13 @@ using Procureasy.API.Models.Enums;
 namespace Procureasy.API.Dtos.Usuario
 {
     // DTOs/UsuarioDto.cs
-    public class UsuarioPatchDto
+    public class UsuarioUpdateDto
     {
-        public string? Nome { get; set; }
-        public string? Email { get; set; }
-        public string? Senha { get; set; }
+        public string Nome { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Senha { get; set; } = string.Empty;
         public string? Cpf { get; set; }
         public string? Cnpj { get; set; }
-        public TipoUsuario? TipoUsuario { get; set; }
+        public TipoUsuario TipoUsuario { get; set; }
     }
 }

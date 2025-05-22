@@ -1,14 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Procureasy.API.Data;
-using Procureasy.API.Dtos;
+using Procureasy.API.Dtos.Usuario;
 using Procureasy.API.Helpers;
 using Procureasy.API.Models;
 using Procureasy.API.Models.Enums;
-using Procureasy.API.Dtos.Usuario;
+using Procureasy.API.Services.Interfaces;
 
 namespace Procureasy.API.Services;
 
-public class UsuarioService
+public class UsuarioService : IUsuarioService
 {
     private readonly ProcurEasyContext _context;
 
@@ -80,42 +80,28 @@ public class UsuarioService
         return (true, null, usuario);
     }
 
-    public async Task<(bool Success, string? Message)> PatchAsync(int id, UsuarioPatchDto dto)
+    public async Task<(bool Success, string? Message)> UpdateAsync(int id, UsuarioUpdateDto dto)
     {
         var usuario = await _context.Usuarios.FindAsync(id);
         if (usuario == null)
             return (false, "Usuário não encontrado.");
 
-        if (!string.IsNullOrWhiteSpace(dto.Email))
-        {
-            var emailExists = await _context.Usuarios.AnyAsync(u => u.Email == dto.Email && u.Id != id);
-            if (emailExists)
-                return (false, "Este email já está em uso.");
-            usuario.Email = dto.Email;
-        }
+        var emailExists = await _context.Usuarios.AnyAsync(u => u.Email == dto.Email && u.Id != id);
+        if (emailExists)
+            return (false, "Este email já está em uso.");
 
-        if (!string.IsNullOrWhiteSpace(dto.Nome))
-            usuario.Nome = dto.Nome;
+        if (dto.TipoUsuario == TipoUsuario.CONSUMIDOR && string.IsNullOrWhiteSpace(dto.Cpf))
+            return (false, "CPF é obrigatório para usuários do tipo Consumidor.");
 
-        if (!string.IsNullOrWhiteSpace(dto.Senha))
-            usuario.Senha = PasswordHelper.HashPassword(dto.Senha);
+        if (dto.TipoUsuario == TipoUsuario.FORNECEDOR && string.IsNullOrWhiteSpace(dto.Cnpj))
+            return (false, "CNPJ é obrigatório para usuários do tipo Fornecedor.");
 
-        if (dto.TipoUsuario.HasValue)
-        {
-            usuario.TipoUsuario = dto.TipoUsuario.Value;
-
-            if (dto.TipoUsuario == TipoUsuario.CONSUMIDOR && string.IsNullOrWhiteSpace(dto.Cpf))
-                return (false, "CPF é obrigatório para usuários do tipo Consumidor.");
-
-            if (dto.TipoUsuario == TipoUsuario.FORNECEDOR && string.IsNullOrWhiteSpace(dto.Cnpj))
-                return (false, "CNPJ é obrigatório para usuários do tipo Fornecedor.");
-        }
-
-        if (dto.Cpf != null)
-            usuario.Cpf = dto.Cpf;
-
-        if (dto.Cnpj != null)
-            usuario.Cnpj = dto.Cnpj;
+        usuario.Nome = dto.Nome;
+        usuario.Email = dto.Email;
+        usuario.Senha = PasswordHelper.HashPassword(dto.Senha);
+        usuario.Cpf = dto.Cpf ?? string.Empty;
+        usuario.Cnpj = dto.Cnpj ?? string.Empty;
+        usuario.TipoUsuario = dto.TipoUsuario;
 
         _context.Entry(usuario).State = EntityState.Modified;
         await _context.SaveChangesAsync();
@@ -128,7 +114,7 @@ public class UsuarioService
         var usuario = await _context.Usuarios.FindAsync(id);
         if (usuario == null) return false;
 
-        bool hasRelacionamentos = await _context.Leiloes.AnyAsync(l => l.UsuarioId == id) ||
+        var hasRelacionamentos = await _context.Leiloes.AnyAsync(l => l.UsuarioId == id) ||
                                   await _context.Lances.AnyAsync(l => l.UsuarioId == id);
 
         if (hasRelacionamentos)
