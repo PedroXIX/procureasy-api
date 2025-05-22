@@ -85,6 +85,7 @@ builder.Services.AddDbContext<ProcurEasyContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<UsuarioService>();
 
 var app = builder.Build();
 
