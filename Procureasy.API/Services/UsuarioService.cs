@@ -11,12 +11,22 @@ namespace Procureasy.API.Services;
 public class UsuarioService : IUsuarioService
 {
     private readonly ProcurEasyContext _context;
+    private readonly EmailValidator _emailValidator;
+    private readonly PasswordValidator _passwordValidator;
+    private readonly DocumentNormalizer _documentNormalizer;
 
-    public UsuarioService(ProcurEasyContext context)
+    public UsuarioService(
+        ProcurEasyContext context,
+        EmailValidator emailValidator,
+        PasswordValidator passwordValidator,
+        DocumentNormalizer documentNormalizer)
     {
         _context = context;
+        _emailValidator = emailValidator;
+        _passwordValidator = passwordValidator;
+        _documentNormalizer = documentNormalizer;
     }
-
+    
     public async Task<List<UsuarioDto>> GetAllAsync()
     {
         return await _context.Usuarios
@@ -53,22 +63,31 @@ public class UsuarioService : IUsuarioService
 
     public async Task<(bool Success, string? Message, Usuario? Created)> CreateAsync(UsuarioCreateDto dto)
     {
+        if (!_emailValidator.IsValid(dto.Email))
+            return (false, "Email inválido.", null);
+
+        if (!_passwordValidator.IsStrong(dto.Senha))
+            return (false, "Senha fraca. Use no mínimo 8 caracteres, com letra maiúscula, minúscula, número e símbolo.", null);
+
         if (await _context.Usuarios.AnyAsync(u => u.Email == dto.Email))
             return (false, "Este email já está em uso.", null);
 
-        if (dto.TipoUsuario == TipoUsuario.CONSUMIDOR && string.IsNullOrWhiteSpace(dto.Cpf))
-            return (false, "CPF é obrigatório para usuários do tipo Consumidor.", null);
+        var cpf = _documentNormalizer.Normalize(dto.Cpf);
+        var cnpj = _documentNormalizer.Normalize(dto.Cnpj);
 
-        if (dto.TipoUsuario == TipoUsuario.FORNECEDOR && string.IsNullOrWhiteSpace(dto.Cnpj))
-            return (false, "CNPJ é obrigatório para usuários do tipo Fornecedor.", null);
+        if (dto.TipoUsuario == TipoUsuario.CONSUMIDOR && string.IsNullOrWhiteSpace(cpf))
+            return (false, "CPF é obrigatório para consumidores.", null);
+
+        if (dto.TipoUsuario == TipoUsuario.FORNECEDOR && string.IsNullOrWhiteSpace(cnpj))
+            return (false, "CNPJ é obrigatório para fornecedores.", null);
 
         var usuario = new Usuario
         {
             Nome = dto.Nome,
             Email = dto.Email,
             Senha = PasswordHelper.HashPassword(dto.Senha),
-            Cpf = dto.Cpf ?? string.Empty,
-            Cnpj = dto.Cnpj ?? string.Empty,
+            Cpf = cpf,
+            Cnpj = cnpj,
             TipoUsuario = dto.TipoUsuario,
             DataCriacao = DateTime.UtcNow,
             Ativo = true
@@ -86,21 +105,30 @@ public class UsuarioService : IUsuarioService
         if (usuario == null)
             return (false, "Usuário não encontrado.");
 
+        if (!_emailValidator.IsValid(dto.Email))
+            return (false, "Email inválido.");
+
+        if (!_passwordValidator.IsStrong(dto.Senha))
+            return (false, "Senha fraca. Use no mínimo 8 caracteres, com letra maiúscula, minúscula, número e símbolo.");
+
         var emailExists = await _context.Usuarios.AnyAsync(u => u.Email == dto.Email && u.Id != id);
         if (emailExists)
             return (false, "Este email já está em uso.");
 
-        if (dto.TipoUsuario == TipoUsuario.CONSUMIDOR && string.IsNullOrWhiteSpace(dto.Cpf))
-            return (false, "CPF é obrigatório para usuários do tipo Consumidor.");
+        var cpf = _documentNormalizer.Normalize(dto.Cpf);
+        var cnpj = _documentNormalizer.Normalize(dto.Cnpj);
 
-        if (dto.TipoUsuario == TipoUsuario.FORNECEDOR && string.IsNullOrWhiteSpace(dto.Cnpj))
-            return (false, "CNPJ é obrigatório para usuários do tipo Fornecedor.");
+        if (dto.TipoUsuario == TipoUsuario.CONSUMIDOR && string.IsNullOrWhiteSpace(cpf))
+            return (false, "CPF é obrigatório para consumidores.");
+
+        if (dto.TipoUsuario == TipoUsuario.FORNECEDOR && string.IsNullOrWhiteSpace(cnpj))
+            return (false, "CNPJ é obrigatório para fornecedores.");
 
         usuario.Nome = dto.Nome;
         usuario.Email = dto.Email;
         usuario.Senha = PasswordHelper.HashPassword(dto.Senha);
-        usuario.Cpf = dto.Cpf ?? string.Empty;
-        usuario.Cnpj = dto.Cnpj ?? string.Empty;
+        usuario.Cpf = cpf;
+        usuario.Cnpj = cnpj;
         usuario.TipoUsuario = dto.TipoUsuario;
 
         _context.Entry(usuario).State = EntityState.Modified;

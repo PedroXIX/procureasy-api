@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
+using Procureasy.API.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -86,6 +87,11 @@ builder.Services.AddDbContext<ProcurEasyContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>(); 
+
+builder.Services.AddSingleton<EmailValidator>();
+builder.Services.AddSingleton<PasswordValidator>();
+builder.Services.AddSingleton<DocumentNormalizer>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
