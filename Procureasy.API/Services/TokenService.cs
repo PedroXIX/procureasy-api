@@ -44,6 +44,7 @@ namespace Procureasy.API.Services
                 audience: audience,
                 claims:
                 [
+                    new Claim(type: ClaimTypes.NameIdentifier, usuarioDataBase.Id.ToString()),
                     new Claim(type: ClaimTypes.Name, usuarioDataBase.Nome),
                     new Claim(type: ClaimTypes.Email, usuarioDataBase.Email),
                     new Claim(type: ClaimTypes.Role, usuarioDataBase.TipoUsuario.ToString()),
