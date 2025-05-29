@@ -5,7 +5,7 @@ using Procureasy.API.Services.Interfaces;
 
 namespace Procureasy.API.Controllers;
 
-[Authorize(Roles = "ADMINISTRADOR")]
+//[Authorize(Roles = "ADMINISTRADOR")]
 [Route("api/[controller]")]
 [ApiController]
 public class UsuarioController : ControllerBase
