@@ -7,11 +7,23 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;
+using Procureasy.API.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddEndpointsApiExplorer();
+
+// Adiciona política CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddSwaggerGen(options =>
 {
@@ -63,17 +75,28 @@ builder.Services.AddAuthentication(x =>
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = builder.Configuration["Jwt:Issuer"],
                 ValidAudience = builder.Configuration["Jwt:Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
             };
         })
     ;
 
 builder.Services.AddDbContext<ProcurEasyContext>(options =>
-   options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); //método para conectar ao database definido no appsettings
-                                                                                          //options.UseSqlServer(builder.Configuration.GetConnectionString("NotebookConnection")));
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); //método para conectar ao database definido no appsettings
+   options.UseSqlServer(builder.Configuration.GetConnectionString("NotebookConnection")));
 
 builder.Services.AddControllers();
+
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<ILanceService, LanceService>();
+builder.Services.AddScoped<ILeilaoService, LeilaoService>();
+builder.Services.AddScoped<IProdutoService, ProdutoService>();
+
+
+
+builder.Services.AddSingleton<EmailValidator>();
+builder.Services.AddSingleton<PasswordValidator>();
+builder.Services.AddSingleton<DocumentNormalizer>();
 
 var app = builder.Build();
 
@@ -85,6 +108,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 

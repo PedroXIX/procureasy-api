@@ -1,53 +1,48 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Procureasy.API.Data;
-using Procureasy.API.Models;
+using Procureasy.API.Dtos.Lance;
+using Procureasy.API.Services.Interfaces;
 
-namespace Procureasy.API.Controllers
+namespace Procureasy.API.Controllers;
+
+[Authorize(Roles = "ADMINISTRADOR,CONSUMIDOR")]
+[Route("api/[controller]")]
+[ApiController]
+public class LanceController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class LancesController : ControllerBase
+    private readonly ILanceService _service;
+
+    public LanceController(ILanceService service)
     {
-        private readonly ProcurEasyContext _context;
-
-        public LancesController(ProcurEasyContext context)
-        {
-            _context = context;
-        }
-
-        [HttpGet]
-        public IEnumerable<Lance> Get()
-        {
-            return _context.Lances;
-        }
-
-        [HttpGet("{id}")]
-        public Lance? GetById(int id)
-        {
-            return _context.Lances.FirstOrDefault(lance => lance.Id == id);
-        }
-        
-        [HttpPost]
-        public string Post()
-        {
-            return "exemplo de post";
-        }
-        
-        [HttpPut("{id}")]
-        public string Put(int id)
-        {
-            return $"exemplo de put com id = {id}";
-        }
-
-        [HttpDelete("{id}")]
-        public string Delete(int id)
-        {
-            return $"exemplo de Delete com id = {id}";
-        }
-
+        _service = service;
     }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<LanceDto>>> Get()
+        => Ok(await _service.GetAllAsync());
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<LanceDto>> Get(int id)
+    {
+        var lance = await _service.GetByIdAsync(id);
+        return lance == null ? NotFound() : Ok(lance);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] LanceCreateDto dto)
+    {
+        var (success, message) = await _service.CreateAsync(dto);
+        if (!success)
+            return BadRequest(new { message });
+
+        return Ok();
+    }
+
+    [HttpPut("{id}")]
+    public IActionResult Put()
+        => StatusCode(405, new { message = "Lances não podem ser atualizados." });
+
+    [HttpDelete("{id}")]
+    public IActionResult Delete()
+        => StatusCode(405, new { message = "Lances não podem ser removidos." });
 }
