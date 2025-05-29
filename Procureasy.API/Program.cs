@@ -85,10 +85,13 @@ builder.Services.AddDbContext<ProcurEasyContext>(options =>
    options.UseSqlServer(builder.Configuration.GetConnectionString("NotebookConnection")));
 
 builder.Services.AddControllers();
+
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ILanceService, LanceService>();
 builder.Services.AddScoped<ILeilaoService, LeilaoService>();
+builder.Services.AddScoped<IProdutoService, ProdutoService>();
+
 
 
 builder.Services.AddSingleton<EmailValidator>();

@@ -1,53 +1,54 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Procureasy.API.Data;
-using Procureasy.API.Models;
+using Procureasy.API.Dtos.Produto;
+using Procureasy.API.Services.Interfaces;
 
-namespace Procureasy.API.Controllers
+namespace Procureasy.API.Controllers;
+
+[Authorize]
+[Route("api/[controller]")]
+[ApiController]
+public class ProdutosController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ProdutosController : ControllerBase
+    private readonly IProdutoService _service;
+
+    public ProdutosController(IProdutoService service)
     {
-        private readonly ProcurEasyContext _context;
-
-        public ProdutosController(ProcurEasyContext context)
-        {
-            _context = context;
-        }
-
-        [HttpGet]
-        public IEnumerable<Produto> Get()
-        {
-            return _context.Produtos;
-        }
-
-        [HttpGet("{id}")]
-        public Produto? GetById(int id)
-        {
-            return _context.Produtos.FirstOrDefault(produto => produto.Id == id);
-        }
-        
-        [HttpPost]
-        public string Post()
-        {
-            return "exemplo de post";
-        }
-        
-        [HttpPut("{id}")]
-        public string Put(int id)
-        {
-            return $"exemplo de put com id = {id}";
-        }
-
-        [HttpDelete("{id}")]
-        public string Delete(int id)
-        {
-            return $"exemplo de Delete com id = {id}";
-        }
-
+        _service = service;
     }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<ProdutoDto>>> Get()
+        => Ok(await _service.GetAllAsync());
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ProdutoDto>> Get(int id)
+    {
+        var produto = await _service.GetByIdAsync(id);
+        return produto == null ? NotFound() : Ok(produto);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] ProdutoCreateDto dto)
+    {
+        var (success, message) = await _service.CreateAsync(dto);
+        if (!success)
+            return BadRequest(new { message });
+
+        return Ok();
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Put(int id, [FromBody] ProdutoUpdateDto dto)
+    {
+        var (success, message) = await _service.UpdateAsync(id, dto);
+        if (!success)
+            return BadRequest(new { message });
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+        => await _service.DeleteAsync(id) ? NoContent() : NotFound();
 }
