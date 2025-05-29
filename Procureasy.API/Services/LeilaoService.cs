@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Procureasy.API.Data;
 using Procureasy.API.Dtos.Leilao;
 using Procureasy.API.Models;
+using Procureasy.API.Models.Enums;
 using Procureasy.API.Services.Interfaces;
 
 namespace Procureasy.API.Services;
@@ -23,10 +24,16 @@ public class LeilaoService : ILeilaoService
                 Id = l.Id,
                 Titulo = l.Titulo,
                 Descricao = l.Descricao,
+                PrecoInicial = l.PrecoInicial,
+                PrecoFinal = l.PrecoFinal,
                 DataInicio = l.DataInicio,
-                DataFim = l.DataFim,
-                Ativo = l.Ativo,
-                UsuarioId = l.UsuarioId
+                DataTermino = l.DataTermino,
+                DataEntrega = l.DataEntrega,
+                Status = l.Status,
+                ProdutoId = l.ProdutoId,
+                UsuarioId = l.UsuarioId,
+                DataCriacao = l.DataCriacao,
+                DataAtualizacao = l.DataAtualizacao
             }).ToListAsync();
     }
 
@@ -40,68 +47,75 @@ public class LeilaoService : ILeilaoService
             Id = l.Id,
             Titulo = l.Titulo,
             Descricao = l.Descricao,
+            PrecoInicial = l.PrecoInicial,
+            PrecoFinal = l.PrecoFinal,
             DataInicio = l.DataInicio,
-            DataFim = l.DataFim,
-            Ativo = l.Ativo,
-            UsuarioId = l.UsuarioId
+            DataTermino = l.DataTermino,
+            DataEntrega = l.DataEntrega,
+            Status = l.Status,
+            ProdutoId = l.ProdutoId,
+            UsuarioId = l.UsuarioId,
+            DataCriacao = l.DataCriacao,
+            DataAtualizacao = l.DataAtualizacao
         };
     }
 
     public async Task<(bool Success, string? Message)> CreateAsync(LeilaoCreateDto dto)
-{
-    if (!await _context.Usuarios.AnyAsync(u => u.Id == dto.UsuarioId))
-        return (false, "Usuário não encontrado.");
-
-    if (!await _context.Produtos.AnyAsync(p => p.Id == dto.ProdutoId))
-        return (false, "Produto não encontrado.");
-
-    if (dto.DataTermino <= dto.DataInicio)
-        return (false, "Data de término deve ser após a data de início.");
-
-    var leilao = new Leilao
     {
-        Titulo = dto.Titulo,
-        Descricao = dto.Descricao,
-        PrecoInicial = dto.PrecoInicial,
-        PrecoFinal = null,
-        DataInicio = dto.DataInicio,
-        DataTermino = dto.DataTermino,
-        DataEntrega = dto.DataEntrega,
-        Status = StatusLeilao.ABERTO,
-        UsuarioId = dto.UsuarioId,
-        ProdutoId = dto.ProdutoId,
-        DataCriacao = DateTime.UtcNow,
-        DataAtualizacao = DateTime.UtcNow
-    };
+        if (!await _context.Usuarios.AnyAsync(u => u.Id == dto.UsuarioId))
+            return (false, "Usuário não encontrado.");
 
-    _context.Leiloes.Add(leilao);
-    await _context.SaveChangesAsync();
+        if (!await _context.Produtos.AnyAsync(p => p.Id == dto.ProdutoId))
+            return (false, "Produto não encontrado.");
 
-    return (true, null);
-}
+        if (dto.DataTermino <= dto.DataInicio)
+            return (false, "Data de término deve ser posterior à data de início.");
 
-public async Task<(bool Success, string? Message)> UpdateAsync(int id, LeilaoUpdateDto dto)
-{
-    var leilao = await _context.Leiloes.FindAsync(id);
-    if (leilao == null)
-        return (false, "Leilão não encontrado.");
+        var leilao = new Leilao
+        {
+            Titulo = dto.Titulo,
+            Descricao = dto.Descricao,
+            PrecoInicial = dto.PrecoInicial,
+            PrecoFinal = null,
+            DataInicio = dto.DataInicio,
+            DataTermino = dto.DataTermino,
+            DataEntrega = dto.DataEntrega,
+            Status = StatusLeilao.ABERTO,
+            UsuarioId = dto.UsuarioId,
+            ProdutoId = dto.ProdutoId,
+            DataCriacao = DateTime.UtcNow,
+            DataAtualizacao = DateTime.UtcNow
+        };
 
-    if (dto.DataTermino <= dto.DataInicio)
-        return (false, "Data de término deve ser após a data de início.");
+        _context.Leiloes.Add(leilao);
+        await _context.SaveChangesAsync();
 
-    leilao.Titulo = dto.Titulo;
-    leilao.Descricao = dto.Descricao;
-    leilao.PrecoInicial = dto.PrecoInicial;
-    leilao.DataInicio = dto.DataInicio;
-    leilao.DataTermino = dto.DataTermino;
-    leilao.DataEntrega = dto.DataEntrega;
-    leilao.DataAtualizacao = DateTime.UtcNow;
+        return (true, null);
+    }
 
-    _context.Entry(leilao).State = EntityState.Modified;
-    await _context.SaveChangesAsync();
+    public async Task<(bool Success, string? Message)> UpdateAsync(int id, LeilaoUpdateDto dto)
+    {
+        var leilao = await _context.Leiloes.FindAsync(id);
+        if (leilao == null)
+            return (false, "Leilão não encontrado.");
 
-    return (true, null);
-}
+        if (dto.DataTermino <= dto.DataInicio)
+            return (false, "Data de término deve ser posterior à data de início.");
+
+        leilao.Titulo = dto.Titulo;
+        leilao.Descricao = dto.Descricao;
+        leilao.PrecoInicial = dto.PrecoInicial;
+        leilao.DataInicio = dto.DataInicio;
+        leilao.DataTermino = dto.DataTermino;
+        leilao.DataEntrega = dto.DataEntrega;
+        leilao.DataAtualizacao = DateTime.UtcNow;
+
+        _context.Entry(leilao).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+
+        return (true, null);
+    }
+
     public async Task<bool> DeleteAsync(int id)
     {
         var leilao = await _context.Leiloes.FindAsync(id);

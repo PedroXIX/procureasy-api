@@ -1,4 +1,6 @@
-﻿namespace Procureasy.API.Services.Interfaces
+﻿using Procureasy.API.Dtos.Leilao;
+
+namespace Procureasy.API.Services.Interfaces
 {
     public interface ILeilaoService
     {
