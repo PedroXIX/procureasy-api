@@ -1,53 +1,54 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Procureasy.API.Data;
-using Procureasy.API.Models;
+using Procureasy.API.Dtos.Leilao;
+using Procureasy.API.Services.Interfaces;
 
-namespace Procureasy.API.Controllers
+namespace Procureasy.API.Controllers;
+
+[Authorize]
+[Route("api/[controller]")]
+[ApiController]
+public class LeiloesController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class LeiloesController : ControllerBase
+    private readonly ILeilaoService _service;
+
+    public LeiloesController(ILeilaoService service)
     {
-        private readonly ProcurEasyContext _context;
-
-        public LeiloesController(ProcurEasyContext context)
-        {
-            _context = context;
-        }
-
-        [HttpGet]
-        public IEnumerable<Leilao> Get()
-        {
-            return _context.Leiloes;
-        }
-
-        [HttpGet("{id}")]
-        public Leilao? GetById(int id)
-        {
-            return _context.Leiloes.FirstOrDefault(leilao => leilao.Id == id);
-        }
-        
-        [HttpPost]
-        public string Post()
-        {
-            return "exemplo de post";
-        }
-        
-        [HttpPut("{id}")]
-        public string Put(int id)
-        {
-            return $"exemplo de put com id = {id}";
-        }
-
-        [HttpDelete("{id}")]
-        public string Delete(int id)
-        {
-            return $"exemplo de Delete com id = {id}";
-        }
-
+        _service = service;
     }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<LeilaoDto>>> Get()
+        => Ok(await _service.GetAllAsync());
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<LeilaoDto>> Get(int id)
+    {
+        var leilao = await _service.GetByIdAsync(id);
+        return leilao == null ? NotFound() : Ok(leilao);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Post([FromBody] LeilaoCreateDto dto)
+    {
+        var (success, message) = await _service.CreateAsync(dto);
+        if (!success)
+            return BadRequest(new { message });
+
+        return Ok();
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Put(int id, [FromBody] LeilaoUpdateDto dto)
+    {
+        var (success, message) = await _service.UpdateAsync(id, dto);
+        if (!success)
+            return BadRequest(new { message });
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> Delete(int id)
+        => await _service.DeleteAsync(id) ? NoContent() : NotFound();
 }

@@ -86,8 +86,9 @@ builder.Services.AddDbContext<ProcurEasyContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddScoped<IUsuarioService, UsuarioService>(); 
+builder.Services.AddScoped<IUsuarioService, UsuarioService>();
 builder.Services.AddScoped<ILanceService, LanceService>();
+builder.Services.AddScoped<ILeilaoService, LeilaoService>();
 
 
 builder.Services.AddSingleton<EmailValidator>();
