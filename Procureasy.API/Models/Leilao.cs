@@ -41,6 +41,7 @@ namespace Procureasy.API.Models
 
         // Relacionamento com Usuario (um Leilao é criado por um Usuario)
         public virtual Usuario Usuario { get; set; } = null!;
+        public virtual ICollection<LeilaoUsuario> LeilaoUsuarios { get; set; } = new List<LeilaoUsuario>();
     }
 
 }

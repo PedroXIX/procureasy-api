@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Procureasy.API.Dtos;
 using Procureasy.API.Dtos.Leilao;
 using Procureasy.API.Services.Interfaces;
 
@@ -47,6 +48,17 @@ public class LeiloesController : ControllerBase
 
         return NoContent();
     }
+
+    [HttpPatch("{leilaoId}/fornecedores")]
+    public async Task<IActionResult> AddFornecedores(int leilaoId, [FromBody] LeilaoFornecedorCreateDto dto)
+    {
+        var (success, message) = await _service.AddFornecedoresAsync(leilaoId, dto.UsuariosIds);
+        if (!success)
+            return BadRequest(new { message });
+
+        return NoContent();
+    }
+
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)

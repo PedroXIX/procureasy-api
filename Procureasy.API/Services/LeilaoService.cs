@@ -116,6 +116,41 @@ public class LeilaoService : ILeilaoService
         return (true, null);
     }
 
+    public async Task<(bool Success, string? Message)> AddFornecedoresAsync(int leilaoId, List<int> usuariosIds)
+    {
+        var leilao = await _context.Leiloes.FindAsync(leilaoId);
+        if (leilao == null)
+            return (false, "Leilão não encontrado.");
+
+        // Validação: garantir que todos os usuários existem
+        var usuarios = await _context.Usuarios
+            .Where(u => usuariosIds.Contains(u.Id))
+            .ToListAsync();
+
+        if (usuarios.Count != usuariosIds.Count)
+            return (false, "Um ou mais fornecedores não existem.");
+
+        foreach (var usuario in usuarios)
+        {
+            // Evita duplicação
+            bool jaExiste = await _context.LeilaoUsuarios
+                .AnyAsync(lu => lu.LeilaoId == leilaoId && lu.UsuarioId == usuario.Id);
+
+            if (!jaExiste)
+            {
+                _context.LeilaoUsuarios.Add(new LeilaoUsuario
+                {
+                    LeilaoId = leilaoId,
+                    UsuarioId = usuario.Id
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return (true, null);
+    }
+
+
     public async Task<bool> DeleteAsync(int id)
     {
         var leilao = await _context.Leiloes.FindAsync(id);
