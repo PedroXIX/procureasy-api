@@ -57,11 +57,17 @@ namespace Procureasy.API.Services
             if (dto.Valor <= 0)
                 return (false, "O valor do lance deve ser maior que zero.");
 
-            if (!await _context.Usuarios.AnyAsync(u => u.Id == dto.UsuarioId))
+            var usuario = await _context.Usuarios.FindAsync(dto.UsuarioId);
+            if (usuario == null)
                 return (false, "Usuário inválido.");
 
-            if (!await _context.Leiloes.AnyAsync(l => l.Id == dto.LeilaoId))
+            var leilao = await _context.Leiloes.FirstOrDefaultAsync(l => l.Id == dto.LeilaoId);
+            if (leilao == null)
                 return (false, "Leilão inválido.");
+
+            // 🔒 VALIDAÇÃO DO VALOR
+            if (dto.Valor > leilao.PrecoInicial)
+                return (false, $"O valor do lance não pode exceder o valor inicial do leilão (R$ {leilao.PrecoInicial}).");
 
             var lance = new Lance
             {
@@ -77,6 +83,23 @@ namespace Procureasy.API.Services
             await _context.SaveChangesAsync();
 
             return (true, null);
+        }
+
+        public async Task<bool> UpdateStatusAsync(int id, bool vencedor)
+        {
+            // Só permite ativar
+            if (!vencedor)
+                return false; // não permite desativar
+
+            var lance = await _context.Lances.FindAsync(id);
+            if (lance == null)
+                return false;
+
+            lance.Vencedor = true; // sempre ativa
+            _context.Entry(lance).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

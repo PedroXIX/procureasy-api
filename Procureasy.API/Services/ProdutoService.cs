@@ -21,6 +21,7 @@ public class ProdutoService : IProdutoService
             .Select(p => new ProdutoDto
             {
                 Id = p.Id,
+                CodigoProduto = p.CodigoProduto,
                 Nome = p.Nome,
                 Quantidade = p.Quantidade,
                 Valor = p.Valor,
@@ -40,6 +41,7 @@ public class ProdutoService : IProdutoService
         return new ProdutoDto
         {
             Id = p.Id,
+            CodigoProduto = p.CodigoProduto,
             Nome = p.Nome,
             Quantidade = p.Quantidade,
             Valor = p.Valor,
@@ -54,13 +56,18 @@ public class ProdutoService : IProdutoService
     public async Task<(bool Success, string? Message)> CreateAsync(ProdutoCreateDto dto)
     {
         if (dto.Quantidade < 0)
-            return (false, "Quantidade não pode ser negativa.");
+            return (false, "A quantidade não pode ser negativa.");
 
         if (dto.Valor < 0)
-            return (false, "Valor não pode ser negativo.");
+            return (false, "O valor não pode ser negativo.");
+
+        //Verificar unicidade do CodigoProduto
+        if (await _context.Produtos.AnyAsync(p => p.CodigoProduto == dto.CodigoProduto))
+            return (false, $"O Código do Produto '{dto.CodigoProduto}' já existe.");
 
         var produto = new Produto
         {
+            CodigoProduto = dto.CodigoProduto,
             Nome = dto.Nome,
             Quantidade = dto.Quantidade,
             Valor = dto.Valor,
@@ -77,18 +84,21 @@ public class ProdutoService : IProdutoService
         return (true, null);
     }
 
-    public async Task<(bool Success, string? Message)> UpdateAsync(int id, ProdutoUpdateDto dto)
+    public async Task<(bool Success, string? Message)> UpdateAsync(string codigoProduto, ProdutoUpdateDto dto)
     {
-        var produto = await _context.Produtos.FindAsync(id);
+        var produto = await _context.Produtos
+            .FirstOrDefaultAsync(p => p.CodigoProduto == codigoProduto);
+
         if (produto == null)
             return (false, "Produto não encontrado.");
 
         if (dto.Quantidade < 0)
-            return (false, "Quantidade não pode ser negativa.");
+            return (false, "A quantidade não pode ser negativa.");
 
         if (dto.Valor < 0)
-            return (false, "Valor não pode ser negativo.");
+            return (false, "O valor não pode ser negativo.");
 
+        // Atualiza os campos permitidos
         produto.Nome = dto.Nome;
         produto.Quantidade = dto.Quantidade;
         produto.Valor = dto.Valor;
@@ -113,6 +123,8 @@ public class ProdutoService : IProdutoService
 
         _context.Entry(produto).State = EntityState.Modified;
         await _context.SaveChangesAsync();
+
         return true;
     }
 }
+

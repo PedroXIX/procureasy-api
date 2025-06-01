@@ -11,5 +11,6 @@ namespace Procureasy.API.Services.Interfaces
         Task<List<LanceDto>> GetAllAsync();
         Task<LanceDto?> GetByIdAsync(int id);
         Task<(bool Success, string? Message)> CreateAsync(LanceCreateDto dto);
+        Task<bool> UpdateStatusAsync(int id, bool vencedor);
     }
 }

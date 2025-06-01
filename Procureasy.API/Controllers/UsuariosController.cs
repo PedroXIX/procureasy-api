@@ -8,11 +8,11 @@ namespace Procureasy.API.Controllers;
 //[Authorize(Roles = "ADMINISTRADOR")]
 [Route("api/[controller]")]
 [ApiController]
-public class UsuarioController : ControllerBase
+public class UsuariosController : ControllerBase
 {
     private readonly IUsuarioService _service;
 
-    public UsuarioController(IUsuarioService service)
+    public UsuariosController(IUsuarioService service)
     {
         _service = service;
     }

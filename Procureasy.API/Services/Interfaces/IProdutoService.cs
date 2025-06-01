@@ -7,7 +7,7 @@ namespace Procureasy.API.Services.Interfaces
         Task<List<ProdutoDto>> GetAllAsync();
         Task<ProdutoDto?> GetByIdAsync(int id);
         Task<(bool Success, string? Message)> CreateAsync(ProdutoCreateDto dto);
-        Task<(bool Success, string? Message)> UpdateAsync(int id, ProdutoUpdateDto dto);
+        Task<(bool Success, string? Message)> UpdateAsync(string codigoProduto, ProdutoUpdateDto dto);
         Task<bool> DeleteAsync(int id); // Inativa o produto
     }
 }

@@ -97,22 +97,37 @@ namespace Procureasy.API.Data
             {
                 entity.HasKey(e => e.Id).HasName("PK__Produtos__3214EC072A97E72E");
 
+                entity.Property(e => e.CodigoProduto)
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .IsRequired();
+
+                entity.HasIndex(e => e.CodigoProduto)
+                    .IsUnique()
+                    .HasDatabaseName("UQ_Produtos_CodigoProduto");
+
                 entity.Property(e => e.Area)
                     .HasMaxLength(20)
                     .IsUnicode(false);
+
                 entity.Property(e => e.Ativo).HasDefaultValue(true);
+
                 entity.Property(e => e.DataAtualizacao)
                     .HasDefaultValueSql("(getdate())")
                     .HasColumnType("datetime");
+
                 entity.Property(e => e.DataCriacao)
                     .HasDefaultValueSql("(getdate())")
                     .HasColumnType("datetime");
+
                 entity.Property(e => e.Descricao)
                     .HasMaxLength(500)
                     .IsUnicode(false);
+
                 entity.Property(e => e.Nome)
                     .HasMaxLength(100)
                     .IsUnicode(false);
+
                 entity.Property(e => e.Valor).HasColumnType("decimal(10, 2)");
             });
 
