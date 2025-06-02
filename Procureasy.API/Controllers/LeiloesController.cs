@@ -59,6 +59,16 @@ public class LeiloesController : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("fornecedor/{fornecedorId}")]
+    public async Task<ActionResult<List<LeilaoDto>>> GetLeiloesPorFornecedor(int fornecedorId)
+    {
+        var leiloes = await _service.GetLeiloesPorFornecedorAsync(fornecedorId);
+
+        if (leiloes == null || !leiloes.Any())
+            return NotFound(new { message = "Nenhum leilão encontrado para o fornecedor especificado." });
+
+        return Ok(leiloes);
+    }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)

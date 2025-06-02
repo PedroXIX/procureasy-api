@@ -150,6 +150,26 @@ public class LeilaoService : ILeilaoService
         return (true, null);
     }
 
+    public async Task<List<LeilaoDto>> GetLeiloesPorFornecedorAsync(int fornecedorId)
+    {
+        var leiloes = await _context.LeilaoUsuarios
+            .Where(lu => lu.UsuarioId == fornecedorId)
+            .Select(lu => new LeilaoDto
+            {
+                Id = lu.Leilao.Id,
+                Titulo = lu.Leilao.Titulo,
+                Descricao = lu.Leilao.Descricao,
+                PrecoInicial = lu.Leilao.PrecoInicial,
+                PrecoFinal = lu.Leilao.PrecoFinal,
+                DataInicio = lu.Leilao.DataInicio,
+                DataTermino = lu.Leilao.DataTermino,
+                DataEntrega = lu.Leilao.DataEntrega,
+                Status = lu.Leilao.Status
+            })
+            .ToListAsync();
+
+        return leiloes;
+    }
 
     public async Task<bool> DeleteAsync(int id)
     {
