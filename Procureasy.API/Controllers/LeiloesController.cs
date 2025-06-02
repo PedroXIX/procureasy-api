@@ -30,13 +30,18 @@ public class LeiloesController : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created, Type = typeof(LeilaoDto))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post([FromBody] LeilaoCreateDto dto)
     {
-        var (success, message) = await _service.CreateAsync(dto);
+        var (success, message, leilao) = await _service.CreateAsync(dto);
         if (!success)
             return BadRequest(new { message });
 
-        return Ok();
+        return CreatedAtAction(
+            nameof(Get),
+            new { id = leilao.Id },
+            leilao);
     }
 
     [HttpPut("{id}")]
@@ -65,7 +70,7 @@ public class LeiloesController : ControllerBase
         var leiloes = await _service.GetLeiloesPorFornecedorAsync(fornecedorId);
 
         if (leiloes == null || !leiloes.Any())
-            return NotFound(new { message = "Nenhum leilão encontrado para o fornecedor especificado." });
+            return NotFound(new { message = "Nenhum leilï¿½o encontrado para o fornecedor especificado." });
 
         return Ok(leiloes);
     }
