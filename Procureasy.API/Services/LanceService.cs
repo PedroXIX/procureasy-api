@@ -1,12 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using Procureasy.API.Data;
+using Procureasy.API.Dtos.Lance;
+using Procureasy.API.Models;
+using Procureasy.API.Models.Enums;
+using Procureasy.API.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Procureasy.API.Services.Interfaces;
-using Procureasy.API.Dtos.Lance;
-using Procureasy.API.Data;
-using Procureasy.API.Models;
 
 namespace Procureasy.API.Services
 {
@@ -87,16 +88,26 @@ namespace Procureasy.API.Services
 
         public async Task<bool> UpdateStatusAsync(int id, bool vencedor)
         {
-            // Só permite ativar
             if (!vencedor)
-                return false; // não permite desativar
+                return false;
 
-            var lance = await _context.Lances.FindAsync(id);
+            var lance = await _context.Lances
+                .Include(l => l.Leilao)
+                .FirstOrDefaultAsync(l => l.Id == id);
+
             if (lance == null)
                 return false;
 
-            lance.Vencedor = true; // sempre ativa
+            lance.Vencedor = true;
             _context.Entry(lance).State = EntityState.Modified;
+
+            if (lance.Leilao != null)
+            {
+                lance.Leilao.Status = StatusLeilao.ENCERRADO;
+                lance.Leilao.DataAtualizacao = DateTime.UtcNow;
+                _context.Entry(lance.Leilao).State = EntityState.Modified;
+            }
+
             await _context.SaveChangesAsync();
 
             return true;
