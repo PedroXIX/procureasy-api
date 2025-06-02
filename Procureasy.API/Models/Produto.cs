@@ -6,6 +6,7 @@ namespace Procureasy.API.Models;
 public partial class Produto
 {
     public int Id { get; set; }
+    public required string CodigoProduto { get; set; }
 
     public string Nome { get; set; } = null!;
 

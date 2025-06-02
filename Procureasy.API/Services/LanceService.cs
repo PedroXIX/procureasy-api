@@ -1,12 +1,13 @@
+using Microsoft.EntityFrameworkCore;
+using Procureasy.API.Data;
+using Procureasy.API.Dtos.Lance;
+using Procureasy.API.Models;
+using Procureasy.API.Models.Enums;
+using Procureasy.API.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Procureasy.API.Services.Interfaces;
-using Procureasy.API.Dtos.Lance;
-using Procureasy.API.Data;
-using Procureasy.API.Models;
 
 namespace Procureasy.API.Services
 {
@@ -57,11 +58,17 @@ namespace Procureasy.API.Services
             if (dto.Valor <= 0)
                 return (false, "O valor do lance deve ser maior que zero.");
 
-            if (!await _context.Usuarios.AnyAsync(u => u.Id == dto.UsuarioId))
+            var usuario = await _context.Usuarios.FindAsync(dto.UsuarioId);
+            if (usuario == null)
                 return (false, "Usuário inválido.");
 
-            if (!await _context.Leiloes.AnyAsync(l => l.Id == dto.LeilaoId))
+            var leilao = await _context.Leiloes.FirstOrDefaultAsync(l => l.Id == dto.LeilaoId);
+            if (leilao == null)
                 return (false, "Leilão inválido.");
+
+            // 🔒 VALIDAÇÃO DO VALOR
+            if (dto.Valor > leilao.PrecoInicial)
+                return (false, $"O valor do lance não pode exceder o valor inicial do leilão (R$ {leilao.PrecoInicial}).");
 
             var lance = new Lance
             {
@@ -77,6 +84,33 @@ namespace Procureasy.API.Services
             await _context.SaveChangesAsync();
 
             return (true, null);
+        }
+
+        public async Task<bool> UpdateStatusAsync(int id, bool vencedor)
+        {
+            if (!vencedor)
+                return false;
+
+            var lance = await _context.Lances
+                .Include(l => l.Leilao)
+                .FirstOrDefaultAsync(l => l.Id == id);
+
+            if (lance == null)
+                return false;
+
+            lance.Vencedor = true;
+            _context.Entry(lance).State = EntityState.Modified;
+
+            if (lance.Leilao != null)
+            {
+                lance.Leilao.Status = StatusLeilao.ENCERRADO;
+                lance.Leilao.DataAtualizacao = DateTime.UtcNow;
+                _context.Entry(lance.Leilao).State = EntityState.Modified;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return true;
         }
     }
 }

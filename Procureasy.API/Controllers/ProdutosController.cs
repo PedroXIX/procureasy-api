@@ -5,7 +5,7 @@ using Procureasy.API.Services.Interfaces;
 
 namespace Procureasy.API.Controllers;
 
-[Authorize]
+//[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class ProdutosController : ControllerBase
@@ -38,10 +38,10 @@ public class ProdutosController : ControllerBase
         return Ok();
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Put(int id, [FromBody] ProdutoUpdateDto dto)
+    [HttpPut("{codigoProduto}")]
+    public async Task<IActionResult> Put(string codigoProduto, [FromBody] ProdutoUpdateDto dto)
     {
-        var (success, message) = await _service.UpdateAsync(id, dto);
+        var (success, message) = await _service.UpdateAsync(codigoProduto, dto);
         if (!success)
             return BadRequest(new { message });
 

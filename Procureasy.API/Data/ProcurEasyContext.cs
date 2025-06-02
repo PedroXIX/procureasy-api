@@ -17,9 +17,11 @@ namespace Procureasy.API.Data
         public virtual DbSet<Leilao> Leiloes { get; set; }
         public virtual DbSet<Produto> Produtos { get; set; }
         public virtual DbSet<Usuario> Usuarios { get; set; }
+        public virtual DbSet<LeilaoUsuario> LeilaoUsuarios { get; set; }  // Adicionado
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Lances
             modelBuilder.Entity<Lance>(entity =>
             {
                 entity.HasKey(e => e.Id).HasName("PK__Lances__3214EC078C87B77A");
@@ -35,17 +37,20 @@ namespace Procureasy.API.Data
                     .IsUnicode(false);
                 entity.Property(e => e.Valor).HasColumnType("decimal(10, 2)");
 
-                entity.HasOne(d => d.Leilao).WithMany(p => p.Lances)
+                entity.HasOne(d => d.Leilao)
+                    .WithMany(p => p.Lances)
                     .HasForeignKey(d => d.LeilaoId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Lance_Leilao");
 
-                entity.HasOne(d => d.Usuario).WithMany(p => p.Lances)
+                entity.HasOne(d => d.Usuario)
+                    .WithMany(p => p.Lances)
                     .HasForeignKey(d => d.UsuarioId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Lance_Usuario");
             });
 
+            // Leiloes
             modelBuilder.Entity<Leilao>(entity =>
             {
                 entity.HasKey(e => e.Id).HasName("PK__Leilaoes__3214EC0745BE6307");
@@ -93,36 +98,70 @@ namespace Procureasy.API.Data
                     .HasConstraintName("FK_Leilao_Usuario");
             });
 
+            // LeilaoUsuarios
+            modelBuilder.Entity<LeilaoUsuario>(entity =>
+            {
+                entity.HasKey(e => new { e.LeilaoId, e.UsuarioId });
+
+                entity.HasOne(e => e.Leilao)
+                    .WithMany(e => e.LeilaoUsuarios)
+                    .HasForeignKey(e => e.LeilaoId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_LeilaoUsuarios_Leilao");
+
+                entity.HasOne(e => e.Usuario)
+                    .WithMany()
+                    .HasForeignKey(e => e.UsuarioId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("FK_LeilaoUsuarios_Usuario");
+            });
+
+            // Produtos
             modelBuilder.Entity<Produto>(entity =>
             {
                 entity.HasKey(e => e.Id).HasName("PK__Produtos__3214EC072A97E72E");
 
+                entity.Property(e => e.CodigoProduto)
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .IsRequired();
+
+                entity.HasIndex(e => e.CodigoProduto)
+                    .IsUnique()
+                    .HasDatabaseName("UQ_Produtos_CodigoProduto");
+
                 entity.Property(e => e.Area)
                     .HasMaxLength(20)
                     .IsUnicode(false);
+
                 entity.Property(e => e.Ativo).HasDefaultValue(true);
+
                 entity.Property(e => e.DataAtualizacao)
                     .HasDefaultValueSql("(getdate())")
                     .HasColumnType("datetime");
+
                 entity.Property(e => e.DataCriacao)
                     .HasDefaultValueSql("(getdate())")
                     .HasColumnType("datetime");
+
                 entity.Property(e => e.Descricao)
                     .HasMaxLength(500)
                     .IsUnicode(false);
+
                 entity.Property(e => e.Nome)
                     .HasMaxLength(100)
                     .IsUnicode(false);
+
                 entity.Property(e => e.Valor).HasColumnType("decimal(10, 2)");
             });
 
+            // Usuarios
             modelBuilder.Entity<Usuario>(entity =>
             {
                 entity.HasKey(e => e.Id).HasName("PK__Usuarios__3214EC07375090E8");
 
                 entity.HasIndex(e => e.Email, "IX_Usuario_Email");
                 entity.HasIndex(e => e.TipoUsuario, "IX_Usuario_TipoUsuario");
-
                 entity.HasIndex(e => e.Email, "UQ_Usuario_Email").IsUnique();
 
                 entity.Property(e => e.Ativo).HasDefaultValue(true);

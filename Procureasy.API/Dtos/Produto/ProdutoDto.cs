@@ -8,6 +8,7 @@ namespace Procureasy.API.Dtos.Produto
     public class ProdutoDto
     {
         public int Id { get; set; }
+        public string CodigoProduto { get; set; } = string.Empty;
         public string Nome { get; set; } = string.Empty;
         public int Quantidade { get; set; }
         public decimal Valor { get; set; }

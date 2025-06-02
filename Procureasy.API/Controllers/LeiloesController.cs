@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Procureasy.API.Dtos;
 using Procureasy.API.Dtos.Leilao;
 using Procureasy.API.Services.Interfaces;
 
@@ -46,6 +47,27 @@ public class LeiloesController : ControllerBase
             return BadRequest(new { message });
 
         return NoContent();
+    }
+
+    [HttpPatch("{leilaoId}/fornecedores")]
+    public async Task<IActionResult> AddFornecedores(int leilaoId, [FromBody] LeilaoFornecedorCreateDto dto)
+    {
+        var (success, message) = await _service.AddFornecedoresAsync(leilaoId, dto.UsuariosIds);
+        if (!success)
+            return BadRequest(new { message });
+
+        return NoContent();
+    }
+
+    [HttpGet("fornecedor/{fornecedorId}")]
+    public async Task<ActionResult<List<LeilaoDto>>> GetLeiloesPorFornecedor(int fornecedorId)
+    {
+        var leiloes = await _service.GetLeiloesPorFornecedorAsync(fornecedorId);
+
+        if (leiloes == null || !leiloes.Any())
+            return NotFound(new { message = "Nenhum leilão encontrado para o fornecedor especificado." });
+
+        return Ok(leiloes);
     }
 
     [HttpDelete("{id}")]

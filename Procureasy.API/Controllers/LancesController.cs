@@ -5,14 +5,14 @@ using Procureasy.API.Services.Interfaces;
 
 namespace Procureasy.API.Controllers;
 
-[Authorize(Roles = "ADMINISTRADOR,CONSUMIDOR")]
+//[Authorize(Roles = "ADMINISTRADOR,CONSUMIDOR")]
 [Route("api/[controller]")]
 [ApiController]
-public class LanceController : ControllerBase
+public class LancesController : ControllerBase
 {
     private readonly ILanceService _service;
 
-    public LanceController(ILanceService service)
+    public LancesController(ILanceService service)
     {
         _service = service;
     }
@@ -41,6 +41,14 @@ public class LanceController : ControllerBase
     [HttpPut("{id}")]
     public IActionResult Put()
         => StatusCode(405, new { message = "Lances não podem ser atualizados." });
+
+    [HttpPatch("{id}/vencedor")]
+    public async Task<IActionResult> AtualizarStatusVencedor(int id)
+    {
+        var success = await _service.UpdateStatusAsync(id, true);
+        return success ? NoContent() : NotFound();
+    }
+
 
     [HttpDelete("{id}")]
     public IActionResult Delete()
