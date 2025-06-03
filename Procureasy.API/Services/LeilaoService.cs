@@ -179,6 +179,22 @@ public class LeilaoService : ILeilaoService
         return true;
     }
 
+    public async Task<bool> AtualizarStatusCanceladoAsync(int id)
+    {
+        var leilao = await _context.Leiloes.FirstOrDefaultAsync(l => l.Id == id);
+
+        if (leilao == null)
+            return false;
+
+        leilao.Status = StatusLeilao.CANCELADO;
+        leilao.DataAtualizacao = DateTime.UtcNow;
+
+        _context.Entry(leilao).State = EntityState.Modified;
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
     public Task<(bool Success, string? Message)> UpdateAsync(int id, LeilaoUpdateDto dto)
     {
         throw new NotImplementedException();

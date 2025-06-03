@@ -75,6 +75,17 @@ public class LeiloesController : ControllerBase
         return Ok(leiloes);
     }
 
+    [HttpPatch("{id}/cancelar")]
+    public async Task<IActionResult> CancelarLeilao(int id)
+    {
+        var sucesso = await _service.AtualizarStatusCanceladoAsync(id);
+
+        if (!sucesso)
+            return NotFound(new { message = "Leilão não encontrado." });
+
+        return NoContent();
+    }
+
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
         => await _service.DeleteAsync(id) ? NoContent() : NotFound();

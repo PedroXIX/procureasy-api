@@ -10,6 +10,7 @@ namespace Procureasy.API.Services.Interfaces
         Task<(bool Success, string? Message)> UpdateAsync(int id, LeilaoUpdateDto dto);
         Task<(bool Success, string? Message)> AddFornecedoresAsync(int leilaoId, List<int> usuariosIds);
         Task<List<LeilaoDto>> GetLeiloesPorFornecedorAsync(int fornecedorId);
+        Task<bool> AtualizarStatusCanceladoAsync(int id);
         Task<bool> DeleteAsync(int id);
     }
 }
