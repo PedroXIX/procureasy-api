@@ -44,15 +44,15 @@ public class LeiloesController : ControllerBase
             leilao);
     }
 
-    [HttpPut("{id}")]
-    public async Task<IActionResult> Put(int id, [FromBody] LeilaoUpdateDto dto)
-    {
-        var (success, message) = await _service.UpdateAsync(id, dto);
-        if (!success)
-            return BadRequest(new { message });
+    //[HttpPut("{id}")]
+    //public async Task<IActionResult> Put(int id, [FromBody] LeilaoUpdateDto dto)
+    //{
+    //    var (success, message) = await _service.UpdateAsync(id, dto);
+    //    if (!success)
+    //        return BadRequest(new { message });
 
-        return NoContent();
-    }
+    //    return NoContent();
+    //}
 
     [HttpPatch("{leilaoId}/fornecedores")]
     public async Task<IActionResult> AddFornecedores(int leilaoId, [FromBody] LeilaoFornecedorCreateDto dto)

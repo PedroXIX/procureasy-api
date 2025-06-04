@@ -195,13 +195,9 @@ public class LeilaoService : ILeilaoService
         return true;
     }
 
-    public Task<(bool Success, string? Message)> UpdateAsync(int id, LeilaoUpdateDto dto)
-    {
-        throw new NotImplementedException();
-    }
+    //public Task<(bool Success, string? Message)> UpdateAsync(int id, LeilaoUpdateDto dto)
+    //{
+    //    throw new NotImplementedException();
+    //}
 
-    internal static async Task<object?> CreateLeilao(object leilao)
-    {
-        throw new NotImplementedException();
-    }
 }
